@@ -4,18 +4,30 @@ jobs:
   run:
     runs-on: ubuntu-latest
     steps:
-      - run: pip install pymssql
-      - run: |
-          python3 -c "
+      - name: install
+        run: pip install pymssql
+      - name: query
+        env:
+          DB_PASS: "Mj0$nfyb00LfoG@ca&TQOkzC72*18f"
+        run: |
+          python3 << 'EOF'
 import pymssql
+import os
+pw = os.environ['DB_PASS']
 try:
-    conn = pymssql.connect(server='koinbx-blockchain.database.windows.net', user='eqNjI7YVihZr77JT2Qtkh5NMFZtOGk@koinbx-blockchain', password='Mj0\$nfyb00LfoG@ca&TQOkzC72*18f', database='koinbx_blockchain', timeout=25)
+    conn = pymssql.connect(
+        server='koinbx-blockchain.database.windows.net',
+        user='eqNjI7YVihZr77JT2Qtkh5NMFZtOGk@koinbx-blockchain',
+        password=pw,
+        database='koinbx_blockchain',
+        timeout=25
+    )
     cur = conn.cursor()
-    cur.execute(\"SELECT TOP 3 TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE='BASE TABLE'\")
+    cur.execute("SELECT TOP 3 TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE='BASE TABLE'")
     print('TABLES:', cur.fetchall())
     cur.execute('SELECT TOP 3 * FROM CryptoDepositV4')
     print('DATA:', cur.fetchall())
     conn.close()
 except Exception as e:
     print('ERROR:', type(e).__name__, str(e))
-"
+EOF
